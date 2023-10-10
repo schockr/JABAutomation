@@ -61,5 +61,8 @@ using WindowsAccessBridgeInterop;
 
 * After successfully building/setting up your project, you're all set to automate your app(s). Happy automating!
 
+## Notes
+* Since AutoIT is used as a failsafe in some situations, and may be used directly, headless execution is not possible. The java app must be visible on screen in case of coordinate-based automation.
+
 ## Known issues
 Not all functions are wrapped yet. This repository will be maintained to improve functionality and ease-of-use as required.
