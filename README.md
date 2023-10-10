@@ -40,7 +40,7 @@ using WindowsAccessBridgeInterop;
             Application.DoEvents(); // this launches message pump to wait for java bridge to initialize
 
             WindowHandle windowHandle = new WindowHandle();
-            IntPtr hWnd = windowHandle.GetHWndByWindowTitleContains("Skeleton");
+            IntPtr hWnd = windowHandle.GetHWndByWindowTitleContains("Skeleton"); // In this case, Skeleton is the name of the app window we are automating
 
             JABBase jabDriver = new JABBase(accessBridge, hWnd);
 
