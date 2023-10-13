@@ -19,7 +19,7 @@ namespace JABAutomation
 
         public TreeNode FindElement(TreeNode root, string labelText)
         {
-            TreeNode? node;
+            TreeNode node;
             if (_partialFinder)
             {
                 node = TreeUtils.Flatten(root).FirstOrDefault(item =>

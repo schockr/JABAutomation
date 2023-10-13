@@ -9,7 +9,7 @@ namespace JABAutomation
 {
     public class ElementFinderByName : IFindElementStrategy
     {
-        private string? _findTypeFilter { get; set; }
+        private string _findTypeFilter { get; set; }
 
         public ElementFinderByName() { }
 
@@ -20,7 +20,7 @@ namespace JABAutomation
 
         public TreeNode FindElement(TreeNode root, string name)
         {
-            TreeNode? node;
+            TreeNode node;
             if (!string.IsNullOrEmpty(_findTypeFilter))
             {
                 node = FindElementWithFilter(root, name);
@@ -38,7 +38,7 @@ namespace JABAutomation
 
         public ReadOnlyCollection<TreeNode> FindElements(TreeNode root, string name)
         {
-            IEnumerable<TreeNode>? nodes;
+            IEnumerable<TreeNode> nodes;
             if (!string.IsNullOrEmpty(_findTypeFilter))
             {
                 nodes = FindElementsWithFilter(root, name);
@@ -54,25 +54,25 @@ namespace JABAutomation
             return nodes.ToList().AsReadOnly();
         }
 
-        private TreeNode? FindElementNoFilter(TreeNode root, string name)
+        private TreeNode FindElementNoFilter(TreeNode root, string name)
         {
-            TreeNode? node = TreeUtils.Flatten(root).FirstOrDefault(item => StringUtils.EqualsIgnoreCase(item.AccessibleContextInfo.name, name));
+            TreeNode node = TreeUtils.Flatten(root).FirstOrDefault(item => StringUtils.EqualsIgnoreCase(item.AccessibleContextInfo.name, name));
             return node;
         }
 
-        private TreeNode? FindElementWithFilter(TreeNode root, string name)
+        private TreeNode FindElementWithFilter(TreeNode root, string name)
         {
-            TreeNode? node = TreeUtils.Flatten(root).FirstOrDefault(item => item.AccessibleContextInfo.role == this._findTypeFilter
+            TreeNode node = TreeUtils.Flatten(root).FirstOrDefault(item => item.AccessibleContextInfo.role == this._findTypeFilter
                   && StringUtils.EqualsIgnoreCase(item.AccessibleContextInfo.name, name));
             return node;
         }
-        private IEnumerable<TreeNode>? FindElementsNoFilter(TreeNode root, string name)
+        private IEnumerable<TreeNode> FindElementsNoFilter(TreeNode root, string name)
         {
             IEnumerable<TreeNode> nodes = TreeUtils.Flatten(root).Where(item => StringUtils.EqualsIgnoreCase(item.AccessibleContextInfo.name, name));
             return nodes;
         }
 
-        private IEnumerable<TreeNode>? FindElementsWithFilter(TreeNode root, string name)
+        private IEnumerable<TreeNode> FindElementsWithFilter(TreeNode root, string name)
         {
             IEnumerable<TreeNode> nodes = TreeUtils.Flatten(root).Where(item => item.AccessibleContextInfo.role == this._findTypeFilter
                 && StringUtils.EqualsIgnoreCase(item.AccessibleContextInfo.name, name));

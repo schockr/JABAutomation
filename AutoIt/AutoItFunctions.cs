@@ -42,6 +42,18 @@ namespace JABAutomation.AutoIt
             }
         }
 
+        public static void ClickAtCoordinates(int x, int y)
+        {
+            try
+            {
+                AutoItX.MouseClick("LEFT", x, y);
+            }
+            catch (Exception e)
+            {
+                throw new ElementNotInteractableException("Element could not be clicked.", e);
+            }
+        }
+
 
     }
 }

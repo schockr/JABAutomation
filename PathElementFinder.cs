@@ -23,7 +23,7 @@ namespace JABAutomation
         public TreeNode FindElement(XDocument xdoc, string path, TreeNode root)
         {
            
-            XElement? el = xdoc.XPathSelectElement(path, GetXmlNamespaceManager());
+            XElement el = xdoc.XPathSelectElement(path, GetXmlNamespaceManager());
 
             if (el != null)
                 return TreeToXMLConverter.GetTreeNodeFromXElement(el, root);
@@ -51,7 +51,7 @@ namespace JABAutomation
 
         public ReadOnlyCollection<TreeNode> FindElements(XDocument xdoc, string path, TreeNode root)
         {
-            IEnumerable<XElement>? els = xdoc.XPathSelectElements(path, GetXmlNamespaceManager());
+            IEnumerable<XElement> els = xdoc.XPathSelectElements(path, GetXmlNamespaceManager());
 
             if (els != null)
                 return TreeToXMLConverter.GetTreeNodesFromXElements(els, root);

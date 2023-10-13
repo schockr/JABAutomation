@@ -28,12 +28,12 @@ namespace JABAutomation
 
         }
 
-        public static TreeNode GetTreeNodeFromXElement(XElement? element, TreeNode root)
+        public static TreeNode GetTreeNodeFromXElement(XElement element, TreeNode root)
         {
             if (element == null || root == null || element.Attribute("elementId") == null)
                 throw new ElementNotFoundException("The element could not be found.");
 
-            TreeNode? treeNode = LocateTreeNodeByElementId(root, element);
+            TreeNode treeNode = LocateTreeNodeByElementId(root, element);
             if (treeNode == null)
                 throw new ElementNotFoundException("");
 
@@ -48,7 +48,7 @@ namespace JABAutomation
             IList<TreeNode> treeNodes = new List<TreeNode>();
             foreach (XElement element in elements)
             {
-                TreeNode? treeNode = LocateTreeNodeByElementId(root, element);
+                TreeNode treeNode = LocateTreeNodeByElementId(root, element);
                 if (treeNode != null)
                     treeNodes.Add(treeNode);
             }
@@ -60,7 +60,7 @@ namespace JABAutomation
         }
 
 
-        private static TreeNode? LocateTreeNodeByElementId(TreeNode root, XElement element)
+        private static TreeNode LocateTreeNodeByElementId(TreeNode root, XElement element)
         {
             return TreeUtils.Flatten(root).FirstOrDefault(node => node.ElementId == element.Attribute("elementId").Value);
         }
@@ -87,9 +87,9 @@ namespace JABAutomation
         /// </summary>
         /// <param name="node"></param>
         /// <returns>Dictionary containing TreeNode attributes.</returns>
-        private static Dictionary<string,string?> GetAttributes(TreeNode node)
+        private static Dictionary<string,string> GetAttributes(TreeNode node)
         {
-            Dictionary<string, string?> attributes = new Dictionary<string, string?>();
+            Dictionary<string, string> attributes = new Dictionary<string, string>();
             attributes.Add("name", node.AccessibleContextInfo.name);
             attributes.Add("role", node.AccessibleContextInfo.role);
             attributes.Add("role_en_US", node.AccessibleContextInfo.role_en_US);
@@ -131,11 +131,11 @@ namespace JABAutomation
         /// <param name="elName">Element name.</param>
         /// <param name="attributes">A dictionary containing attribute key-value pairs.</param>
         /// <returns>A XElement object with the proper attributes set.</returns>
-        private static XElement CreateXElement(string elName, Dictionary<string,string?> attributes)
+        private static XElement CreateXElement(string elName, Dictionary<string,string> attributes)
         {
             XElement el = CreateXElement(elName);
 
-            foreach (KeyValuePair<string,string?> attr in attributes)
+            foreach (KeyValuePair<string,string> attr in attributes)
             {
                 XAttribute attribute = new XAttribute(attr.Key, attr.Value == null ? "" : attr.Value);
                 el.Add(attribute);

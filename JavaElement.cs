@@ -67,7 +67,7 @@ namespace JABAutomation
             AccessibleActions actions = GetAccessibleActionsProperty();
 
             // Verify the click action is accessible
-            if (actions.actionInfo.Select(a=>a.name == "click").Count() >= 1)
+            if (actions.actionInfo.Where(a=>a.name == "click").Count() >= 1)
             {
                 AccessibleActionsToDo actionsToDo = new AccessibleActionsToDo();
                 actionsToDo.actions = new AccessibleActionInfo[actions.actionInfo.Length];
@@ -78,13 +78,21 @@ namespace JABAutomation
             }
             else
             {
-                // if this happens, user should handle the exception
-                throw new ElementNotInteractableException("No click action is available for this element: " + Role);
+                try
+                {
+                    AutoItFunctions.ClickAtCoordinates(Location.X, Location.Y);
+                }
+                catch (Exception e)
+                {
+                    // if this happens, user should handle the exception
+                    throw new ElementNotInteractableException("No click action is available for this element: " + Role, e);
+
+                }
             }
 
         }
 
-
+        
         public virtual void DoubleClick()
         {
             // Double click unnecessary at jvm level. If needed, perform with autoit by coordinates

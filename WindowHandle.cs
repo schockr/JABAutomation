@@ -29,7 +29,7 @@ namespace JABAutomation
         {
             foreach (Process pList in processes)
             {
-                if (pList.MainWindowTitle.Contains("Skeleton"))
+                if (pList.MainWindowTitle.Contains(winTitleSubStr))
                 {
                     return pList.MainWindowHandle;
                 }
@@ -37,6 +37,16 @@ namespace JABAutomation
             return IntPtr.Zero;
         }
         
+        public IntPtr GetHWndByProcessName(string processName)
+        {
+            foreach (Process pList in processes)
+            {
+                if (StringUtils.EqualsIgnoreCase(pList.ProcessName, processName))
+                    return pList.MainWindowHandle;
+            }
+            return IntPtr.Zero;
+        }
+
         public List<IntPtr> GetWindowHandles()
         {
             List<IntPtr> hWnds = new List<IntPtr>();
