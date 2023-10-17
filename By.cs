@@ -1,8 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 
 namespace JABAutomation
 {
-    [Serializable]
     public class By
     {
         private static readonly string XPathSelectorMechanism = SelectorMechanisms.XPath;

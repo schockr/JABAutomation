@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
@@ -22,6 +23,8 @@ namespace JABAutomation
         private TreeNode _jvmNodeTree;
         private bool _disposed;
 
+        private int _waitTimeMs = 500;
+        private int _maxFindAttempts = 60;
 
         public string Name
         {
@@ -139,6 +142,33 @@ namespace JABAutomation
 
      
             throw new ElementNotFoundException("Element not found at defined mechanism and criteria: " + by.Mechanism + ", " + by.Criteria);
+
+        }
+
+        public IJavaElement FindElementWait(By by)
+        {
+            if (by == null)
+            {
+                throw new ArgumentNullException(nameof(@by), "by cannot be null");
+            }
+
+            int maxAttempts = _maxFindAttempts;
+
+            for (int attempts = 1; attempts <= maxAttempts; attempts++)
+            {
+                try
+                {
+                    RefreshTree();
+                    IJavaElement el = FindElement(by);
+
+                    return el;
+                }
+                catch (Exception e)
+                {
+                    Thread.Sleep(_waitTimeMs); // Wait before attempting again
+                }
+            }
+            throw new ElementNotFoundException("The element (criteria: " + by.Mechanism + ", " + by.Criteria + ") could not be found after " + maxAttempts + " attempts.");
 
         }
 
