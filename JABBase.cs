@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using WindowsAccessBridgeInterop;
 
 namespace JABAutomation
 {
-    public class JABBase : IDisposable, IJavaDriver
+    public class JABBase : IDisposable, IJavaDriver, ISearchContext
     {
         private readonly AccessBridge _accessBridge;
         private readonly AccessBridgeFunctions _accessBridgeFunctions;
@@ -91,35 +92,357 @@ namespace JABAutomation
             }
         }
 
-        public IJavaElement FindElementByPath(string path)
+        public IJavaElement FindElement(By by)
         {
-            IFindElementStrategy strategy = new PathElementFinder();
-            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+            if (by == null)
+            {
+                throw new ArgumentNullException(nameof(@by), "by cannot be null");
+            }
 
-            TreeNode el = elementFinder.FindElementByPath(path);
+            TreeNode el = null;
+            //TODO: Long chain of if statements is a code smell. Break this up later & use a factory
+            if (by.Mechanism == SelectorMechanisms.XPath)
+                el = FindElementByXPath(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.PushButtonName)
+                el = FindElementByPushButton(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.LabelText)
+                el = FindElementByLabelText(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.PartialLabelText)
+                el = FindElementByPartialLabelText(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.ComboboxName)
+                el = FindElementByCombobox(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.Name)
+                el = FindElementByName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.NameAndRole)
+                el = FindElementByNameAndRole(by.Criteria, by.Role);
+            else if (by.Mechanism == SelectorMechanisms.Description)
+                el = FindElementByDescription(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.DescriptionAndRole)
+                el = FindElementByDescAndRole(by.Criteria, by.Role);
+            else if (by.Mechanism == SelectorMechanisms.TextboxName)
+                el = FindElementByTextboxName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.LabelName)
+                el = FindElementByLabelName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.RadioButtonName)
+                el = FindElementByRadioButtonName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.ToggleButtonName)
+                el = FindElementByToggleButtonName(by.Criteria);
+            else
+                el = null;
+
 
             if (el != null)
             {
                 IJavaElement javaEl = new JavaElement(this, el);
                 return javaEl;
             }
-            throw new ElementNotFoundException("Element not found at path: "+ path);
+
+     
+            throw new ElementNotFoundException("Element not found at defined mechanism and criteria: " + by.Mechanism + ", " + by.Criteria);
+
         }
 
-        public ReadOnlyCollection<IJavaElement> FindElementsByPath(string path)
+        public ReadOnlyCollection<IJavaElement> FindElements(By by)
         {
-            IFindElementStrategy strategy = new PathElementFinder();
-            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+            if (by == null)
+            {
+                throw new ArgumentNullException(nameof(@by), "by cannot be null");
+            }
 
-            ReadOnlyCollection<TreeNode> els = elementFinder.FindElementsByPath(path);
+            ReadOnlyCollection<TreeNode> els = null;
+
+            //TODO: Long chain of if statements is a code smell. Break this up later & use a factory
+            if (by.Mechanism == SelectorMechanisms.XPath)
+                els = FindElementsByXPath(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.PushButtonName)
+                els = FindElementsByPushButton(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.LabelText)
+                els = FindElementsByLabelText(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.PartialLabelText)
+                els = FindElementsByPartialLabelText(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.ComboboxName)
+                els = FindElementsByCombobox(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.Name)
+                els = FindElementsByName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.NameAndRole)
+                els = FindElementsByNameAndRole(by.Criteria, by.Role);
+            else if (by.Mechanism == SelectorMechanisms.Description)
+                els = FindElementsByDescription(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.DescriptionAndRole)
+                els = FindElementsByDescAndRole(by.Criteria, by.Role);
+            else if (by.Mechanism == SelectorMechanisms.TextboxName)
+                els = FindElementsByTextboxName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.LabelName)
+                els = FindElementsByLabelName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.RadioButtonName)
+                els = FindElementsByRadioButtonName(by.Criteria);
+            else if (by.Mechanism == SelectorMechanisms.ToggleButtonName)
+                els = FindElementsByToggleButtonName(by.Criteria);
+            else
+                els = null;
+
 
             if (els != null)
             {
                 return ConvertTreeNodesToJavaElements(els);
             }
-            throw new ElementNotFoundException("Element not found at path: " + path);
+            throw new ElementNotFoundException("Element not found at defined mechanism and criteria: " + by.Mechanism + ", " + by.Criteria);
+        }
+        
+        private TreeNode FindElementByXPath(string path)
+        {
+            IFindElementStrategy strategy = new PathElementFinder();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByPath(path);
         }
 
+        private ReadOnlyCollection<TreeNode> FindElementsByXPath(string path)
+        {
+            IFindElementStrategy strategy = new PathElementFinder();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+            return elementFinder.FindElementsByPath(path);
+        }
+
+        private TreeNode FindElementByPushButton(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.PUSH_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByPushButton(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByPushButton(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.PUSH_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByPushButton(criteria);
+
+        }
+
+        private TreeNode FindElementByLabelText(string criteria)
+        {
+            IFindElementStrategy strategy = new LabelTextElementFinder();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByLabelText(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByLabelText(string criteria)
+        {
+            IFindElementStrategy strategy = new LabelTextElementFinder();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByLabelText(criteria);
+        }
+
+        private TreeNode FindElementByPartialLabelText(string criteria)
+        {
+            IFindElementStrategy strategy = new LabelTextElementFinder(true);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByLabelText(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByPartialLabelText(string criteria)
+        {
+            IFindElementStrategy strategy = new LabelTextElementFinder(true);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByLabelText(criteria);
+        }
+
+        private TreeNode FindElementByCombobox(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.COMBO_BOX);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByCombobox(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByCombobox(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.COMBO_BOX);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByCombobox(criteria);
+
+        }
+
+        private TreeNode FindElementByName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(criteria);
+
+        }
+
+        private TreeNode FindElementByNameAndRole(string name, ElementType elType)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(elType);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(name);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByNameAndRole(string name, ElementType elType)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(elType);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(name);
+
+        }
+
+        private TreeNode FindElementByDescription(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByDescription();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByDescription(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByDescription(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByDescription();
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByDescription(criteria);
+
+        }
+        private TreeNode FindElementByDescAndRole(string name, ElementType elType)
+        {
+            IFindElementStrategy strategy = new ElementFinderByDescription(elType);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByDescription(name);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByDescAndRole(string name, ElementType elType)
+        {
+            IFindElementStrategy strategy = new ElementFinderByDescription(elType);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByDescription(name);
+
+        }
+        private TreeNode FindElementByTextboxName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.TEXT);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByTextboxName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.TEXT);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(criteria);
+
+        }
+
+        private TreeNode FindElementByLabelName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.LABEL);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByLabelName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.LABEL);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(criteria);
+
+        }
+        private TreeNode FindElementByRadioButtonName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.RADIO_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByRadioButtonName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.RADIO_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(criteria);
+
+        }
+        private TreeNode FindElementByToggleButtonName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.TOGGLE_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementByName(criteria);
+
+        }
+
+        private ReadOnlyCollection<TreeNode> FindElementsByToggleButtonName(string criteria)
+        {
+            IFindElementStrategy strategy = new ElementFinderByName(ElementType.TOGGLE_BUTTON);
+            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+            return elementFinder.FindElementsByName(criteria);
+
+        }
+
+        /* public IJavaElement FindElementByPath(string path)
+         {
+             IFindElementStrategy strategy = new PathElementFinder();
+             ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+             TreeNode el = elementFinder.FindElementByPath(path);
+
+             if (el != null)
+             {
+                 IJavaElement javaEl = new JavaElement(this, el);
+                 return javaEl;
+             }
+             throw new ElementNotFoundException("Element not found at path: "+ path);
+         }
+
+         public ReadOnlyCollection<IJavaElement> FindElementsByPath(string path)
+         {
+             IFindElementStrategy strategy = new PathElementFinder();
+             ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+
+             ReadOnlyCollection<TreeNode> els = elementFinder.FindElementsByPath(path);
+
+             if (els != null)
+             {
+                 return ConvertTreeNodesToJavaElements(els);
+             }
+             throw new ElementNotFoundException("Element not found at path: " + path);
+         }
+         
         public IJavaElement FindElementByPushButton(string buttonName)
         {
             IFindElementStrategy strategy = new ElementFinderByName(ElementType.PUSH_BUTTON);
@@ -148,8 +471,8 @@ namespace JABAutomation
             }
             throw new ElementNotFoundException("Element not found at button name: " + buttonName);
         }
-
-        public IJavaElement FindElementByLabelText(string labelText)
+        */
+        /*public IJavaElement FindElementByLabelText(string labelText)
         {
             IFindElementStrategy strategy = new LabelTextElementFinder();
             ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
@@ -178,7 +501,7 @@ namespace JABAutomation
             throw new ElementNotFoundException("Element not found with label text: " + labelText);
         }
 
-
+        
         public IJavaElement FindElementByPartialLabelText(string labelText)
         {
             IFindElementStrategy strategy = new LabelTextElementFinder(true);
@@ -295,35 +618,35 @@ namespace JABAutomation
             }
             throw new ElementNotFoundException("Element not found at element name: " + elName);
         }
+        */
+        /* public IJavaElement FindElementByDesc(string elDesc)
+         {
+             IFindElementStrategy strategy = new ElementFinderByDescription();
+             ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
 
-        public IJavaElement FindElementByDesc(string elDesc)
-        {
-            IFindElementStrategy strategy = new ElementFinderByDescription();
-            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+             TreeNode el = elementFinder.FindElementByDescription(elDesc);
 
-            TreeNode el = elementFinder.FindElementByDescription(elDesc);
+             if (el != null)
+             {
+                 IJavaElement javaEl = new JavaElement(this, el);
+                 return javaEl;
+             }
+             throw new ElementNotFoundException("Element not found at element desc: " + elDesc);
+         }
 
-            if (el != null)
-            {
-                IJavaElement javaEl = new JavaElement(this, el);
-                return javaEl;
-            }
-            throw new ElementNotFoundException("Element not found at element desc: " + elDesc);
-        }
+         public ReadOnlyCollection<IJavaElement> FindElementsByDesc(string elDesc)
+         {
+             IFindElementStrategy strategy = new ElementFinderByDescription();
+             ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
 
-        public ReadOnlyCollection<IJavaElement> FindElementsByDesc(string elDesc)
-        {
-            IFindElementStrategy strategy = new ElementFinderByDescription();
-            ElementFinder elementFinder = new ElementFinder(JvmNodeTree, strategy);
+             ReadOnlyCollection<TreeNode> els = elementFinder.FindElementsByDescription(elDesc);
 
-            ReadOnlyCollection<TreeNode> els = elementFinder.FindElementsByDescription(elDesc);
-
-            if (els != null)
-            {
-                return ConvertTreeNodesToJavaElements(els);
-            }
-            throw new ElementNotFoundException("Element not found at element desc: " + elDesc);
-        }
+             if (els != null)
+             {
+                 return ConvertTreeNodesToJavaElements(els);
+             }
+             throw new ElementNotFoundException("Element not found at element desc: " + elDesc);
+         }
 
         public IJavaElement FindElementByDesc(string elDesc, ElementType elType)
         {
@@ -410,7 +733,7 @@ namespace JABAutomation
                 return ConvertTreeNodesToJavaElements(els);
             }
             throw new ElementNotFoundException("Element not found at textbox name: " + elName);
-        }
+        }*/
 
         private ReadOnlyCollection<IJavaElement> ConvertTreeNodesToJavaElements(ReadOnlyCollection<TreeNode> els)
         {

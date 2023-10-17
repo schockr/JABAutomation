@@ -12,5 +12,7 @@ namespace JABAutomation
         TreeNode FindElement(TreeNode root, string finderCritera);
 
         ReadOnlyCollection<TreeNode> FindElements(TreeNode root, string finderCriteria);
+
     }
+
 }

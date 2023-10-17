@@ -52,6 +52,6 @@ namespace JABAutomation
         TreeNode FindElementByMenuItem(string path);
 
         ReadOnlyCollection<TreeNode> FindElementsByMenuItem(string path);
-
+       
     }
 }
