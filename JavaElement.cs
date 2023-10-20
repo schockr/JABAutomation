@@ -19,6 +19,7 @@ namespace JABAutomation
         private TreeNode element;
         private int jvmId;
         private JavaObjectHandle joh;
+        private JavaTable tableInfo;
 
         public JavaElement(JABBase jabDriver, TreeNode element)
         {
@@ -26,6 +27,7 @@ namespace JABAutomation
             this.element = element;
             this.jvmId = element.JavaObjectHandle.JvmId;
             this.joh = element.JavaObjectHandle;
+            this.tableInfo = new JavaTable(this.element);
         }
 
         public virtual Point Location
@@ -60,6 +62,22 @@ namespace JABAutomation
         {
             get { return new ElementCoordinates(this); }
         }
+
+        public virtual TreeNode Element
+        {
+            get
+            {
+                return this.element;
+            }
+        }
+
+        public virtual JavaTable TableInfo {
+            get
+            {                
+                return this.tableInfo;
+            }
+        }
+
 
         public virtual void Click()
         {

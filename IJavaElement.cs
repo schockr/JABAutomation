@@ -11,6 +11,10 @@ namespace JABAutomation
     {
         Point Location { get; }
         Size Size { get; }
+        TreeNode Element { get; }
+        string Role { get; }
+        ICoordinates Coordinates { get; }
+        JavaTable TableInfo { get; }
         void Click();
         void DoubleClick();
         void SendKeys(string text);

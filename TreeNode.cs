@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using System.Data.Common;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -134,23 +136,14 @@ namespace JABAutomation
             {
                 
             }
-
-
-
-            /*IEnumerable<PropertyNode> firstnode =  this.properties.OfType<PropertyGroup>().
-                Where(group => StringUtils.EqualsIgnoreCase(group.Name, "accessible text")).
-                SelectMany(group => group.Children);
-
-            IEnumerable<PropertyNode> secondnode = firstnode.OfType<PropertyGroup>().Where(group => StringUtils.EqualsIgnoreCase(group.Name, "Text attributes at point (0, 0)"))
-                .SelectMany(group => group.Children);
-
-            string final = secondnode?.Where(prop => StringUtils.EqualsIgnoreCase(prop.Name, "sentence"))
-                .Select(prop => prop.Value).FirstOrDefault()?.ToString() ?? string.Empty;
-            */
-            //  this.properties.Where(c => c.Name == "test");
-           // this.properties.
-
         }
+
+        public JavaTable GetAccessibleTableInfo()
+        {
+            JavaTable table = new JavaTable(this);
+            return table;
+        }
+
 
         public void SetAcNode(AccessibleContextNode AcNode)
         {
