@@ -134,6 +134,20 @@ namespace JABAutomation
             }
         }
 
+        public List<PropertyNode> TableCellsChildren
+        {
+            get
+            {
+                return TableInfo
+                    .SelectMany(group => group.Children)
+                    .OfType<PropertyGroup>()
+                    .Where(subGroup => StringUtils.EqualsIgnoreCase(subGroup.Name, "cells"))
+                    .SelectMany(subGroup => subGroup.Children)
+                    .OfType<PropertyGroup>()
+                    .SelectMany(subsubgroup => subsubgroup.Children)
+                    .ToList();
+            }
+        }
         public List<PropertyNode> GetSelectCellByRowColIndex(int rowIndex, int colIndex)
         {
             string rowColDef = RowColDefByIndex(rowIndex, colIndex);

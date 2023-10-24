@@ -122,6 +122,7 @@ namespace JABAutomation
         private static XElement CreateXElement(string elName)
         {
             elName = Regex.Replace(elName, @"\s+", "");
+
             return new XElement(elName);
         }
 
@@ -133,6 +134,8 @@ namespace JABAutomation
         /// <returns>A XElement object with the proper attributes set.</returns>
         private static XElement CreateXElement(string elName, Dictionary<string,string> attributes)
         {
+            elName = String.IsNullOrEmpty(elName) ? "empty" : elName;
+
             XElement el = CreateXElement(elName);
 
             foreach (KeyValuePair<string,string> attr in attributes)
