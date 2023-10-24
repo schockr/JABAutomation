@@ -148,6 +148,7 @@ namespace JABAutomation
                     .ToList();
             }
         }
+
         public List<PropertyNode> GetSelectCellByRowColIndex(int rowIndex, int colIndex)
         {
             string rowColDef = RowColDefByIndex(rowIndex, colIndex);

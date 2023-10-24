@@ -9,6 +9,7 @@ namespace JABAutomation
 {
     public interface IJavaElement
     {
+        JavaObjectHandle JavaObjectHandle { get; }
         Point Location { get; }
         Size Size { get; }
         TreeNode Element { get; }

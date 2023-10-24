@@ -29,7 +29,12 @@ namespace JABAutomation
             this.joh = element.JavaObjectHandle;
             this.tableInfo = new JavaTable(this.element);
         }
-
+        
+        public virtual JavaObjectHandle JavaObjectHandle
+        {
+            get { return joh; }
+        }
+        
         public virtual Point Location
         {
             get
