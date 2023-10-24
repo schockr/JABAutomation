@@ -27,7 +27,7 @@ namespace JABAutomation
             this.element = element;
             this.jvmId = element.JavaObjectHandle.JvmId;
             this.joh = element.JavaObjectHandle;
-            this.tableInfo = new JavaTable(this.element);
+            this.tableInfo = new JavaTable(this);
         }
         
         public virtual JavaObjectHandle JavaObjectHandle
@@ -182,8 +182,26 @@ namespace JABAutomation
 
         }
 
-
-
+        public virtual void ClickTableRowByCellName(string cellName, int colIndex = -1, int rowIndex = -1)
+        {
+            try
+            {
+                Point point = TableInfo.GetTableRowCoordinates(cellName, colIndex, rowIndex);
+                if (point.X != -1 && point.Y !=  -1)
+                {
+                    AutoItFunctions.ClickAtCoordinates(point.X, point.Y);
+                }
+                else
+                {
+                    throw new ElementNotFoundException("The table cell with name could not be found: "+ cellName);
+                }
+            }
+            catch (Exception e)
+            {
+                // if this happens, user should handle the exception
+                throw new ElementNotInteractableException("No click action is available for this element: " + Role, e);
+            }
+        }
 
     }
 }

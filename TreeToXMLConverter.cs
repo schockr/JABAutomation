@@ -91,6 +91,7 @@ namespace JABAutomation
         {
             Dictionary<string, string> attributes = new Dictionary<string, string>();
             attributes.Add("name", node.AccessibleContextInfo.name);
+            attributes.Add("description", node.AccessibleContextInfo.description);
             attributes.Add("role", node.AccessibleContextInfo.role);
             attributes.Add("role_en_US", node.AccessibleContextInfo.role_en_US);
             attributes.Add("x", node.AccessibleContextInfo.x.ToString());

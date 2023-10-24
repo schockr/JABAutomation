@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsAccessBridgeInterop;
 
 namespace JABAutomation
 {
@@ -20,5 +21,6 @@ namespace JABAutomation
         void DoubleClick();
         void SendKeys(string text);
         void Clear();
+        void ClickTableRowByCellName(string cellName, int colIndex = -1, int rowIndex = -1);
     }
 }

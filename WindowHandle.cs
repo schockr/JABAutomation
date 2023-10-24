@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +25,16 @@ namespace JABAutomation
         {
             return Process.GetProcesses();
         }
-        
+
+
+        [DllImport("user32.dll")]
+        static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        public IntPtr GetHWndByTitle(string winTitle)
+        {
+            return FindWindow(null, winTitle);
+        }
+
         public IntPtr GetHWndByWindowTitleContains(string winTitleSubStr)
         {
             foreach (Process pList in processes)

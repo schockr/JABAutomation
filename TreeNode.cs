@@ -138,13 +138,6 @@ namespace JABAutomation
             }
         }
 
-        public JavaTable GetAccessibleTableInfo()
-        {
-            JavaTable table = new JavaTable(this);
-            return table;
-        }
-
-
         public void SetAcNode(AccessibleContextNode AcNode)
         {
             this.AcNode = AcNode;

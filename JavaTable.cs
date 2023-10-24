@@ -1,9 +1,13 @@
-﻿using System;
+﻿using JABAutomation.AutoIt;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WindowsAccessBridgeInterop;
 
@@ -11,15 +15,20 @@ namespace JABAutomation
 {
     public class JavaTable
     {
-        private TreeNode element;
+        private IJavaElement element;
+        private TreeNode treeEl;
         private PropertyList properties;
+        private Size size;
+        private Point tableCoordinates;
         private IEnumerable<PropertyGroup> tableInfo;
 
-        public JavaTable(TreeNode element)
+        public JavaTable(IJavaElement el)
         {
-            this.element = element;
-            this.properties = element.GetProperties();
-
+            this.element = el;
+            this.treeEl = element.Element;
+            this.properties = treeEl.GetProperties();
+            this.size = element.Size;
+            this.tableCoordinates = new Point(element.Coordinates.LocationOnScreen.X, element.Coordinates.LocationOnScreen.Y);
             TableInfo = GetAccessibleTableInfo();
         }
 
@@ -31,6 +40,17 @@ namespace JABAutomation
             }
             set { this.tableInfo = value; }
         }
+
+        public Size Size
+        {
+            get { return this.size; }
+        }
+
+        public Point TableCoordinates
+        {
+            get { return this.tableCoordinates; }
+        }
+
         public int TableRowCount
         {
             get
@@ -161,7 +181,7 @@ namespace JABAutomation
             {
                 for (int j = 1; j <= TableColumnCount; j++)
                 {
-                    string rowColDef = RowColDefByIndex(i,j);
+                    string rowColDef = RowColDefByIndex(i, j);
                     List<PropertyNode> cell = GetCellByRowColIndex("select cells", rowColDef);
 
                     foreach (PropertyNode child in cell)
@@ -231,5 +251,76 @@ namespace JABAutomation
 
             return table;
         }
+
+        public Point GetTableRowCoordinates(string cellName, int targetColIndex = -1, int targetRowIndex = -1)
+        {
+            List<PropertyNode> tableCells = this.TableCells.ToList();
+
+            foreach (PropertyGroup cellGroup in tableCells)
+            {
+                string rowcol = cellGroup.Name;
+                if (TryParseRowCol(rowcol, out int rowNum, out int rowCount, out int colNum, out int colCount))
+                {
+                    if ((targetColIndex < 0 && targetRowIndex < 0) 
+                        || colNum == targetColIndex 
+                        || rowNum == targetRowIndex 
+                        && IsCellNameMatch(cellGroup, cellName))
+                    {
+                        // calculate the row coordinates
+                        int rowHeight = Size.Height / rowCount;
+
+                        // offset by one due to indexing (row 1 starts at table coordinate 0)
+                        int currentY = TableCoordinates.Y + (rowHeight * (rowNum - 1)); 
+
+                        // Create Coordinate for top left of table row 
+                        return new Point(TableCoordinates.X, currentY);
+                    }
+                }
+                else
+                {
+                    throw new InvalidElementStateException("The row column group name format failed to parse: " + rowcol);
+                }
+            }
+
+            return new Point(-1, -1);
+        }
+
+        private bool TryParseRowCol(string rowCol, out int rowNum, out int rowCount, out int colNum, out int colCount)
+        {
+            Match match = RegexMatchRowCol(rowCol);
+            if (match.Success)
+            {
+                rowNum = int.Parse(match.Groups[1].Value);
+                rowCount = int.Parse(match.Groups[2].Value);
+                colNum = int.Parse(match.Groups[3].Value);
+                colCount = int.Parse(match.Groups[4].Value);
+                return true;
+            }
+            else
+            {
+                rowNum = rowCount = colNum = colCount = 0;
+                return false;
+            }
+        }
+
+        private bool IsCellNameMatch(PropertyGroup cellGroup, string cellName)
+        {
+            PropertyNode cellText = cellGroup.Children.FirstOrDefault(group => group.Name == "Name");
+            if (cellText != null)
+            {
+                string cellTextStr = cellText.Value.ToString();
+                return cellTextStr == cellName;
+            }
+            return false;
+        }
+
+
+        private Match RegexMatchRowCol(string rowcol)
+        {
+            string pattern = @"\[Row (\d+)/(\d+), Col (\d+)/(\d+)\]";
+
+            return Regex.Match(rowcol, pattern);
+        }
+
     }
 }
